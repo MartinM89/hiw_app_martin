@@ -1,6 +1,7 @@
 public interface IUserService
 {
-    User user { get; set; }
+    User? User { get; set; }
+    bool CheckIfAnyAccountExists();
     void Register(User user);
     void Login(string username, string password);
     User GetAccountObject(string username);

@@ -1,8 +1,6 @@
-using System.Text.RegularExpressions;
-
 public class RegisterAdminCommand : Command
 {
-    private static string[] questions =
+    private static readonly string[] questions =
     [
         "\nEnter email: ",
         "\nEnter first name: ",
@@ -16,7 +14,7 @@ public class RegisterAdminCommand : Command
         "\nVerify password: ",
     ];
 
-    private static string[] answers = new string[questions.Length];
+    private static readonly string[] answers = new string[questions.Length];
 
     public RegisterAdminCommand(GetServices getServices)
         : base(
@@ -29,11 +27,12 @@ public class RegisterAdminCommand : Command
 
     public override void Execute(string[] input)
     {
+        // Super password
         while (true)
         {
             Console.Clear();
             Console.Write("Enter super password: ");
-            string? superPassword = Console.ReadLine();
+            string? superPassword = StringHelper.HidePassword();
 
             if (string.IsNullOrWhiteSpace(superPassword))
             {
@@ -61,15 +60,16 @@ public class RegisterAdminCommand : Command
             break;
         }
 
+        // Email
         while (true)
         {
             Console.Clear();
 
-            Console.WriteLine($"Admin registration menu:\n");
+            Console.WriteLine($"Admin registration menu:");
             Console.Write(questions[0]);
 
             string? email = Console.ReadLine();
-            email = email?.Trim();
+            email = email?.Trim().ToLower();
 
             if (string.IsNullOrWhiteSpace(email))
             {
@@ -84,23 +84,34 @@ public class RegisterAdminCommand : Command
                 return;
             }
 
-            if (!Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+            if (GetServices.AccountService.CheckUsernameAlreadyUsed(email))
+            {
+                Console.WriteLine("\nEmail already in use.");
+                Helper.PressKeyToContinue();
+                continue;
+            }
+
+            try
+            {
+                answers[0] = Helper.CheckForEmailFormat(email);
+            }
+            catch (Exception)
             {
                 Console.WriteLine("\nInvalid email format.");
                 Helper.PressKeyToContinue();
                 continue;
             }
 
-            answers[0] = email;
-
             break;
         }
 
+        // First name
         while (true)
         {
             Console.Clear();
 
-            Console.WriteLine($"Admin registration menu:\n");
+            Console.WriteLine($"Admin registration menu:");
+            Console.WriteLine(questions[0] + answers[0]);
             Console.Write(questions[1]);
 
             string? firstName = Console.ReadLine();
@@ -126,16 +137,27 @@ public class RegisterAdminCommand : Command
                 continue;
             }
 
-            answers[1] = StringHelper.CapitilazeFirstLetter(firstName);
+            try
+            {
+                answers[1] = StringHelper.CapitilazeFirstLetter(firstName);
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("\nInvalid first name format.");
+                Helper.PressKeyToContinue();
+                continue;
+            }
 
             break;
         }
 
+        // Surname
         while (true)
         {
             Console.Clear();
 
-            Console.WriteLine($"Admin registration menu:\n");
+            Console.WriteLine($"Admin registration menu:");
+            Console.WriteLine(questions[0] + answers[0] + questions[1] + answers[1]);
             Console.Write(questions[2]);
 
             string? surname = Console.ReadLine();
@@ -161,16 +183,29 @@ public class RegisterAdminCommand : Command
                 continue;
             }
 
-            answers[2] = StringHelper.CapitilazeFirstLetter(surname);
+            try
+            {
+                answers[2] = StringHelper.CapitilazeFirstLetter(surname);
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("\nInvalid surname format.");
+                Helper.PressKeyToContinue();
+                continue;
+            }
 
             break;
         }
 
+        // Adress
         while (true)
         {
             Console.Clear();
 
-            Console.WriteLine($"Admin registration menu:\n");
+            Console.WriteLine($"Admin registration menu:");
+            Console.WriteLine(
+                questions[0] + answers[0] + questions[1] + answers[1] + questions[2] + answers[2]
+            );
             Console.Write(questions[3]);
 
             string? adress = Console.ReadLine();
@@ -189,16 +224,38 @@ public class RegisterAdminCommand : Command
                 return;
             }
 
-            answers[3] = Helper.CheckForAdressFormat(adress);
+            try
+            {
+                answers[3] = Helper.CheckForAdressFormat(adress);
+            }
+            catch (Exception)
+            {
+                Console.WriteLine(
+                    "\nInvalid address format. The address must contain a street name followed by a space and a number."
+                );
+                Helper.PressKeyToContinue();
+                continue;
+            }
 
             break;
         }
 
+        // City
         while (true)
         {
             Console.Clear();
 
-            Console.WriteLine($"Admin registration menu:\n");
+            Console.WriteLine($"Admin registration menu:");
+            Console.WriteLine(
+                questions[0]
+                    + answers[0]
+                    + questions[1]
+                    + answers[1]
+                    + questions[2]
+                    + answers[2]
+                    + questions[3]
+                    + answers[3]
+            );
             Console.Write(questions[4]);
 
             string? city = Console.ReadLine();
@@ -224,16 +281,38 @@ public class RegisterAdminCommand : Command
                 continue;
             }
 
-            answers[4] = StringHelper.CapitilazeFirstLetter(city);
+            try
+            {
+                answers[4] = StringHelper.CapitilazeFirstLetter(city);
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("\nInvalid city format.");
+                Helper.PressKeyToContinue();
+                continue;
+            }
 
             break;
         }
 
+        // Zip code
         while (true)
         {
             Console.Clear();
 
-            Console.WriteLine($"Admin registration menu:\n");
+            Console.WriteLine($"Admin registration menu:");
+            Console.WriteLine(
+                questions[0]
+                    + answers[0]
+                    + questions[1]
+                    + answers[1]
+                    + questions[2]
+                    + answers[2]
+                    + questions[3]
+                    + answers[3]
+                    + questions[4]
+                    + answers[4]
+            );
             Console.Write(questions[5]);
 
             string? zipCode = Console.ReadLine();
@@ -252,16 +331,40 @@ public class RegisterAdminCommand : Command
                 return;
             }
 
-            answers[5] = Helper.CheckForZipCodeFormat(zipCode);
+            try
+            {
+                answers[5] = Helper.CheckForZipCodeFormat(zipCode);
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("\nInvalid zip code format. The zip code must contain 5 digits.");
+                Helper.PressKeyToContinue();
+                continue;
+            }
 
             break;
         }
 
+        // Country
         while (true)
         {
             Console.Clear();
 
-            Console.WriteLine($"Admin registration menu:\n");
+            Console.WriteLine($"Admin registration menu:");
+            Console.WriteLine(
+                questions[0]
+                    + answers[0]
+                    + questions[1]
+                    + answers[1]
+                    + questions[2]
+                    + answers[2]
+                    + questions[3]
+                    + answers[3]
+                    + questions[4]
+                    + answers[4]
+                    + questions[5]
+                    + answers[5]
+            );
             Console.Write(questions[6]);
 
             string? country = Console.ReadLine();
@@ -287,16 +390,42 @@ public class RegisterAdminCommand : Command
                 continue;
             }
 
-            answers[6] = StringHelper.CapitilazeFirstLetter(country);
+            try
+            {
+                answers[6] = StringHelper.CapitilazeFirstLetter(country);
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("\nInvalid country format.");
+                Helper.PressKeyToContinue();
+                continue;
+            }
 
             break;
         }
 
+        // Social security number
         while (true)
         {
             Console.Clear();
 
-            Console.WriteLine($"Admin registration menu:\n");
+            Console.WriteLine($"Admin registration menu:");
+            Console.WriteLine(
+                questions[0]
+                    + answers[0]
+                    + questions[1]
+                    + answers[1]
+                    + questions[2]
+                    + answers[2]
+                    + questions[3]
+                    + answers[3]
+                    + questions[4]
+                    + answers[4]
+                    + questions[5]
+                    + answers[5]
+                    + questions[6]
+                    + answers[6]
+            );
             Console.Write(questions[7]);
 
             string? socialSecurityNumber = Console.ReadLine();
@@ -315,19 +444,48 @@ public class RegisterAdminCommand : Command
                 return;
             }
 
-            answers[7] = Helper.CheckForSocialSecurityNumberFormat(socialSecurityNumber);
+            try
+            {
+                answers[7] = Helper.CheckForSocialSecurityNumberFormat(socialSecurityNumber);
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("\nInvalid social security number format.");
+                Helper.PressKeyToContinue();
+                continue;
+            }
 
             break;
         }
 
+        // Password
+        string? password;
         while (true)
         {
             Console.Clear();
 
-            Console.WriteLine($"Admin registration menu:\n");
+            Console.WriteLine($"Admin registration menu:");
+            Console.WriteLine(
+                questions[0]
+                    + answers[0]
+                    + questions[1]
+                    + answers[1]
+                    + questions[2]
+                    + answers[2]
+                    + questions[3]
+                    + answers[3]
+                    + questions[4]
+                    + answers[4]
+                    + questions[5]
+                    + answers[5]
+                    + questions[6]
+                    + answers[6]
+                    + questions[7]
+                    + answers[7]
+            );
             Console.Write(questions[8]);
 
-            string? password = StringHelper.HidePassword();
+            password = StringHelper.HidePassword();
             password = password?.Trim();
 
             if (string.IsNullOrWhiteSpace(password))
@@ -343,16 +501,48 @@ public class RegisterAdminCommand : Command
                 return;
             }
 
-            answers[8] = Helper.CheckPasswordStrength(password);
+            try
+            {
+                answers[8] = Helper.CheckPasswordStrength(password);
+            }
+            catch (Exception)
+            {
+                Console.WriteLine(
+                    "\nPassword must contain at least 8 characters, one uppercase letter, one lowercase letter, one number and one special character."
+                );
+                Helper.PressKeyToContinue();
+                continue;
+            }
 
             break;
         }
 
+        // Verify password
         while (true)
         {
             Console.Clear();
 
-            Console.WriteLine($"Admin registration menu:\n");
+            Console.WriteLine($"Admin registration menu:");
+            Console.WriteLine(
+                questions[0]
+                    + answers[0]
+                    + questions[1]
+                    + answers[1]
+                    + questions[2]
+                    + answers[2]
+                    + questions[3]
+                    + answers[3]
+                    + questions[4]
+                    + answers[4]
+                    + questions[5]
+                    + answers[5]
+                    + questions[6]
+                    + answers[6]
+                    + questions[7]
+                    + answers[7]
+                    + questions[8]
+                    + answers[8].Replace(answers[8], new string('*', answers[8].Length))
+            );
             Console.Write(questions[9]);
 
             string? verifyPassword = StringHelper.HidePassword();
@@ -371,17 +561,19 @@ public class RegisterAdminCommand : Command
                 return;
             }
 
-            if (!answers[8].Equals(verifyPassword))
+            if (!password.Equals(verifyPassword))
             {
                 Console.WriteLine("\nPasswords did not match.");
                 Helper.PressKeyToContinue();
                 continue;
             }
 
+            password = Helper.SaltAndHashPassword(password);
+
             break;
         }
 
-        User user =
+        User admin =
             new()
             {
                 Email = answers[0],
@@ -392,11 +584,11 @@ public class RegisterAdminCommand : Command
                 ZipCode = answers[5],
                 Country = answers[6],
                 SocialSecurityNumber = answers[7],
-                PasswordHash = answers[8],
+                PasswordHash = password,
                 IsAdmin = true,
             };
 
-        GetServices.AccountService.Register(user);
+        GetServices.AccountService.Register(admin);
 
         Console.WriteLine("\nAdmin account successfully registered.");
         Console.ReadKey();

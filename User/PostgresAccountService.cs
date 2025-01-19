@@ -1,14 +1,35 @@
 public class PostgresUserService : IUserService
 {
-    public User user
+    public User? User { get; set; }
+
+    public bool CheckIfAnyAccountExists()
     {
-        get => throw new NotImplementedException();
-        set => throw new NotImplementedException();
+        try
+        {
+            using AppContext context = new AppContext();
+
+            return context.Users.Any();
+        }
+        catch (Exception)
+        {
+            throw new Exception("Error: Could not check if any account exists.");
+        }
     }
 
     public bool CheckUsernameAlreadyUsed(string username)
     {
-        throw new NotImplementedException();
+        try
+        {
+            using AppContext context = new AppContext();
+
+            User? account = context.Users.FirstOrDefault(a => a.Email == username);
+
+            return account != null;
+        }
+        catch (Exception)
+        {
+            throw new Exception("Error: Could not check if username is already used.");
+        }
     }
 
     public User GetAccountObject(string username)
@@ -18,7 +39,28 @@ public class PostgresUserService : IUserService
 
     public void Login(string username, string password)
     {
-        throw new NotImplementedException();
+        try
+        {
+            using var context = new AppContext();
+
+            User? account = context
+                .Users.ToList()
+                .FirstOrDefault(u =>
+                    u.Email == username
+                    && BCrypt.Net.BCrypt.EnhancedVerify(password, u.PasswordHash)
+                );
+
+            if (account == null)
+            {
+                throw new Exception("Error: Invalid username or password.");
+            }
+
+            User = account;
+        }
+        catch (Exception)
+        {
+            throw new Exception("Error: Could not login.");
+        }
     }
 
     public void Register(User user)

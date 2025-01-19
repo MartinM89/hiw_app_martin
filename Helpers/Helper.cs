@@ -5,7 +5,19 @@ public class Helper
     public static void PressKeyToContinue()
     {
         Console.WriteLine("\nPress any key to continue...");
-        Console.ReadKey(false);
+        Console.ReadKey(intercept: false);
+    }
+
+    public static string CheckForEmailFormat(string input)
+    {
+        if (Regex.IsMatch(input, @"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$"))
+        {
+            return input;
+        }
+        else
+        {
+            throw new FormatException("Invalid email format.");
+        }
     }
 
     public static string CheckForAdressFormat(string input)
@@ -14,22 +26,15 @@ public class Helper
 
         input = Regex.Replace(input, @"(\D)\s*(\d)", "$1 $2");
 
-        Console.WriteLine(input);
-        PressKeyToContinue();
-
         if (
             Regex.IsMatch(input, @"^[A-Za-zåäöÅÄÖ]+\s\d+[A-Za-zåäöÅÄÖ]?$")
             || Regex.IsMatch(input, @"^[A-Za-zåäöÅÄÖ]+\s\d+$")
         )
         {
-            Console.WriteLine(input);
-            PressKeyToContinue();
             return input;
         }
         else
         {
-            Console.WriteLine(input);
-            PressKeyToContinue();
             throw new FormatException(
                 "Invalid address format. The address must contain a street name followed by a space and a number."
             );
@@ -56,21 +61,21 @@ public class Helper
 
         if (input.Length == 10)
         {
-            if (Regex.IsMatch(input, @"^\d{2}\d{2}\d{2}\d{4}$"))
-            {
-                return input[..2] + "-" + input[2..4] + "-" + input[4..6] + "-" + input[6..];
-            }
-            else
-            {
-                throw new FormatException(
-                    "Invalid social security number format. The format must be YY-MM-DD-NNNN."
-                );
-            }
+            string yearPrefix = int.Parse(input[..2]) <= DateTime.Now.Year % 100 ? "20" : "19";
+            input = yearPrefix + input;
         }
-        else if (input.Length == 12)
+
+        if (input.Length == 12)
         {
             if (Regex.IsMatch(input, @"^\d{4}\d{2}\d{2}\d{4}$"))
             {
+                DateTime birthDate = DateTime.ParseExact(input[..8], "yyyyMMdd", null);
+                if (birthDate.AddYears(100) < DateTime.Now)
+                {
+                    throw new FormatException(
+                        "Invalid social security number. The birthdate indicates an age over 100 years."
+                    );
+                }
                 return input[..4] + "-" + input[4..6] + "-" + input[6..8] + "-" + input[8..];
             }
             else
@@ -116,5 +121,10 @@ public class Helper
         }
 
         return input;
+    }
+
+    public static string SaltAndHashPassword(string password)
+    {
+        return BCrypt.Net.BCrypt.EnhancedHashPassword(password, workFactor: 12);
     }
 }
