@@ -4,40 +4,31 @@
 name: .NET
 
 on:
-  push:
-    branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
+    branches: ['main']
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - name: Block direct commits to main
-      if: github.event_name == 'push'
-      run: |
-        echo "Direct pushes to main are not allowed."
-        exit 1
-        
-    - if: github.event_name == 'pull_request'
-      uses: actions/checkout@v4
-    
-    - name: Setup .NET
-      if: github.event_name == 'pull_request'
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
-        
-    - name: Restore dependencies
-      if: github.event_name == 'pull_request'
-      run: dotnet restore
-      
-    - name: Build
-      if: github.event_name == 'pull_request'
-      run: dotnet build --no-restore
-      
-    - name: Test
-      if: github.event_name == 'pull_request'
-      run: dotnet test --no-build --verbosity normal
+      - if: github.event_name == 'pull_request'
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        if: github.event_name == 'pull_request'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        if: github.event_name == 'pull_request'
+        run: dotnet restore
+
+      - name: Build
+        if: github.event_name == 'pull_request'
+        run: dotnet build --no-restore
+
+      - name: Test
+        if: github.event_name == 'pull_request'
+        run: dotnet test --no-build --verbosity normal
