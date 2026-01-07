@@ -16,7 +16,7 @@ public class User
 
     [Required]
     [MaxLength(100)]
-    public string Surname { get; set; } = default!;
+    public string Surname { get; set; } = default!
 
     [Required]
     [MaxLength(255)]
